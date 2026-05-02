@@ -5,53 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Video Caption App</title>
 </head>
+
 <body>
 
 <h2>Video Caption Tool</h2>
 
-<input type="file" id="video" />
+<input type="file" id="video" accept="video/*" />
 <br><br>
 
-<textarea id="captions" placeholder="Paste captions"></textarea>
+<textarea id="captions" placeholder="Paste captions here" style="width:300px;height:100px;"></textarea>
 <br><br>
 
-<button onclick="upload()">Process Video</button>
+<button onclick="processVideo()">Process Video</button>
 
 <p id="status"></p>
 
-<a id="download" style="display:none;">Download</a>
+<a id="download" style="display:none;">Download Video</a>
 
 <script>
-async function upload() {
+async function processVideo() {
   const video = document.getElementById("video").files[0];
   const captions = document.getElementById("captions").value;
 
   if (!video || !captions) {
-    alert("Add video + captions");
+    alert("Select video and captions");
     return;
   }
+
+  document.getElementById("status").innerText = "Processing...";
 
   const form = new FormData();
   form.append("video", video);
   form.append("captions", captions);
 
-  document.getElementById("status").innerText = "Processing...";
+  try {
+    const res = await fetch("/export", {
+      method: "POST",
+      body: form
+    });
 
-  const res = await fetch("/export", {
-    method: "POST",
-    body: form
-  });
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
 
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
+    const dl = document.getElementById("download");
+    dl.href = url;
+    dl.download = "captioned.mp4";
+    dl.style.display = "block";
+    dl.innerText = "Download Video";
 
-  const dl = document.getElementById("download");
-  dl.href = url;
-  dl.download = "output.mp4";
-  dl.style.display = "block";
-  dl.innerText = "Download Video";
-
-  document.getElementById("status").innerText = "Done!";
+    document.getElementById("status").innerText = "Done!";
+  } catch (err) {
+    document.getElementById("status").innerText = "Error processing video";
+  }
 }
 </script>
 
