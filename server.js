@@ -6,7 +6,14 @@ const fs = require("fs");
 const path = require("path");
 
 const app = express();
+
+// allow all origins (important for WebView + mobile apps)
 app.use(cors());
+
+// basic health check route (FIX FOR "Cannot GET /")
+app.get("/", (req, res) => {
+  res.send("Video Caption API is running");
+});
 
 // limit file size (20MB)
 const upload = multer({
@@ -58,5 +65,6 @@ app.post("/export", upload.single("video"), (req, res) => {
     .run();
 });
 
+// IMPORTANT: Render uses dynamic PORT
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
