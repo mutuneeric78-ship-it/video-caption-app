@@ -1,31 +1,18 @@
 # Video Caption App
 
-A simple web app that lets users upload videos, add captions, and download processed videos.
+A simple web app that lets users upload videos and download processed output.
 
 ## Features
 - Upload video files
-- Add custom captions
-- Auto video processing using FFmpeg
-- Download final video
-- PWA support (installable app)
+- Basic backend processing
+- Download result file
+- PWA install support
 
 ## Tech Stack
 - Node.js
 - Express
 - Multer
-- FFmpeg
-- Progressive Web App (PWA)
+- PWA (Service Worker + Manifest)
 
 ## Deployment
-Deployed on Render:
-https://video-caption-app-60ko.onrender.com
-
-## PWA Files
-- manifest.json
-- sw.js
-- index.html
-
-## API
-POST /export
-- video file upload
-- captions text
+Hosted on Render
