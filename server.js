@@ -1,78 +1,43 @@
 const express = require("express");
 const multer = require("multer");
-const cors = require("cors");
-const ffmpeg = require("fluent-ffmpeg");
-const fs = require("fs");
 const path = require("path");
+const fs = require("fs");
 
 const app = express();
 
-/* CORE MIDDLEWARE */
-app.use(cors());
+app.use(express.json());
+app.use(express.static("public"));
 
-// IMPORTANT: this is what fixes /sw.js and /manifest.json
-app.use(express.static(path.join(__dirname, "public")));
+const upload = multer({ dest: "uploads/" });
 
-/* UPLOAD CONFIG */
-const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 20 * 1024 * 1024 }
-});
-
-/* HELPERS */
-const safeDelete = (file) => {
-  if (fs.existsSync(file)) fs.unlinkSync(file);
-};
-
-/* HOME ROUTE */
+// Home route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* VIDEO EXPORT */
-app.post("/export", upload.single("video"), (req, res) => {
-  if (!req.file) return res.status(400).send("No video uploaded");
+// EXPORT ROUTE
+app.post("/export", upload.single("video"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send("No video uploaded");
+    }
 
-  const videoPath = req.file.path;
-  const captions = (req.body.captions || "").replace(/'/g, "\\'");
+    const inputPath = req.file.path;
+    const outputPath = path.join(__dirname, "output.mp4");
 
-  const outputPath = path.join(__dirname, `output_${Date.now()}.mp4`);
+    // TEMP: simple pass-through (replace with FFmpeg later)
+    fs.copyFileSync(inputPath, outputPath);
 
-  const text = captions.split("\n").join(" | ");
+    res.download(outputPath, "captioned-video.mp4", () => {
+      fs.unlinkSync(inputPath);
+      fs.unlinkSync(outputPath);
+    });
 
-  ffmpeg(videoPath)
-    .videoFilters({
-      filter: "drawtext",
-      options: {
-        text: text,
-        fontsize: 26,
-        fontcolor: "white",
-        x: "(w-text_w)/2",
-        y: "h-100",
-        box: 1,
-        boxcolor: "black@0.5"
-      }
-    })
-    .outputOptions("-preset veryfast")
-    .output(outputPath)
-    .on("end", () => {
-      res.download(outputPath, () => {
-        safeDelete(videoPath);
-        safeDelete(outputPath);
-      });
-    })
-    .on("error", (err) => {
-      console.log(err);
-      safeDelete(videoPath);
-      safeDelete(outputPath);
-      res.status(500).send("Processing failed");
-    })
-    .run();
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Processing failed");
+  }
 });
 
-/* START SERVER */
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
-});
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server running on " + PORT));
