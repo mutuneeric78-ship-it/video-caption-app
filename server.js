@@ -7,32 +7,33 @@ const path = require("path");
 
 const app = express();
 
-// ===== MIDDLEWARE =====
+// IMPORTANT: allow frontend + PWA files (manifest, sw.js, index.html)
 app.use(cors());
-app.use(express.static("public")); // IMPORTANT: serves your UI
 
-// ===== FILE UPLOAD CONFIG =====
+// THIS FIXES YOUR PWA ISSUE (VERY IMPORTANT)
+app.use(express.static("public"));
+
 const upload = multer({
   dest: "uploads/",
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
-// ===== HEALTH CHECK =====
-app.get("/api", (req, res) => {
-  res.send("Video Caption API is running");
-});
-
-// ===== SAFE DELETE =====
 const safeDelete = (file) => {
   if (fs.existsSync(file)) fs.unlinkSync(file);
 };
 
-// ===== VIDEO PROCESS ROUTE =====
+// HOME ROUTE (optional but good)
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// VIDEO EXPORT ROUTE
 app.post("/export", upload.single("video"), (req, res) => {
   if (!req.file) return res.status(400).send("No video uploaded");
 
   const videoPath = req.file.path;
   const captions = (req.body.captions || "").replace(/'/g, "\\'");
+
   const outputPath = path.join(__dirname, `output_${Date.now()}.mp4`);
 
   const text = captions.split("\n").join(" | ");
@@ -67,7 +68,7 @@ app.post("/export", upload.single("video"), (req, res) => {
     .run();
 });
 
-// ===== START SERVER =====
+// PORT
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("Server running on port " + PORT);
