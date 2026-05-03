@@ -7,39 +7,29 @@ const path = require("path");
 
 const app = express();
 
-/* =========================
-   CORE MIDDLEWARE
-========================= */
+/* CORE MIDDLEWARE */
 app.use(cors());
 
-// CRITICAL FIX: serve PWA + frontend files
+// IMPORTANT: this is what fixes /sw.js and /manifest.json
 app.use(express.static(path.join(__dirname, "public")));
 
-/* =========================
-   UPLOAD CONFIG
-========================= */
+/* UPLOAD CONFIG */
 const upload = multer({
   dest: "uploads/",
   limits: { fileSize: 20 * 1024 * 1024 }
 });
 
-/* =========================
-   HELPERS
-========================= */
+/* HELPERS */
 const safeDelete = (file) => {
   if (fs.existsSync(file)) fs.unlinkSync(file);
 };
 
-/* =========================
-   ROUTES
-========================= */
-
-// Home route (fallback safety)
+/* HOME ROUTE */
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// VIDEO PROCESSING
+/* VIDEO EXPORT */
 app.post("/export", upload.single("video"), (req, res) => {
   if (!req.file) return res.status(400).send("No video uploaded");
 
@@ -80,9 +70,7 @@ app.post("/export", upload.single("video"), (req, res) => {
     .run();
 });
 
-/* =========================
-   START SERVER
-========================= */
+/* START SERVER */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
