@@ -1,10 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Video Caption Tool</title>
+  <link rel="manifest" href="/manifest.json">
+</head>
+
+<body>
+  <h2>Video Caption Tool</h2>
+
+  <input type="file" id="video" />
+  <textarea id="captions" placeholder="Enter captions"></textarea>
+
+  <button onclick="uploadVideo()">Process Video</button>
+
+  <p id="status"></p>
+
+<script>
 async function uploadVideo() {
   const video = document.getElementById("video").files[0];
   const captions = document.getElementById("captions").value;
   const status = document.getElementById("status");
 
   if (!video) {
-    alert("Please select a video first");
+    alert("Select video first");
     return;
   }
 
@@ -12,34 +30,31 @@ async function uploadVideo() {
   formData.append("video", video);
   formData.append("captions", captions);
 
-  status.innerText = "Uploading video...";
+  status.innerText = "Uploading...";
 
   try {
-    status.innerText = "Processing video... please wait";
+    status.innerText = "Processing...";
 
     const res = await fetch("/export", {
       method: "POST",
       body: formData
     });
 
-    status.innerText = "Finalizing video...";
-
-    if (!res.ok) {
-      throw new Error("Server error");
-    }
-
     const blob = await res.blob();
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = "captioned-video.mp4";
+    a.download = "video.mp4";
     a.click();
 
-    status.innerText = "Download ready ✔";
+    status.innerText = "Done ✔";
 
-  } catch (err) {
-    console.error(err);
-    status.innerText = "Error processing video. Try again.";
+  } catch (e) {
+    status.innerText = "Error processing video";
   }
 }
+</script>
+
+</body>
+</html>
