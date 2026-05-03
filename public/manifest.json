@@ -1,7 +1,7 @@
 {
   "name": "Video Caption Tool",
   "short_name": "Caption App",
-  "description": "Upload videos, add captions, and download edited videos instantly.",
+  "description": "Upload videos, add captions, and export MP4 videos instantly.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,16 +9,19 @@
   "theme_color": "#22c55e",
   "orientation": "any",
   "id": "/",
+  "categories": ["productivity", "video", "media"],
   "icons": [
     {
       "src": "/icon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
